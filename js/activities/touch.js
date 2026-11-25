@@ -78,7 +78,8 @@ export default async function touch(ctx, act) {
     let busy = false;
     onTap = async (e) => {
       if (busy) return;
-      const got = buddy.partAt(e.clientX, e.clientY, parts);
+      // forgiving: close enough to the asked part counts, even if another part is nearer
+      const got = buddy.distTo(part, e.clientX, e.clientY) <= 24 ? part : buddy.partAt(e.clientX, e.clientY, parts);
       if (!got) return;
       if (got === part) {
         busy = true;

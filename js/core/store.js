@@ -7,6 +7,7 @@ const defaults = () => ({
     childName: 'Taeri', // shown on screen
     childSay: 'Taeri', // how the English voice should pronounce it
     rate: 0.85, // speech speed (kids like it a bit slower)
+    pitch: 1, // multiplies every friend's voice pitch (parent page: 목소리 높이)
     voiceURI: '',
     mic: true,
     buddy: 'momo',

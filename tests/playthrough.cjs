@@ -12,11 +12,9 @@ const W = +(process.argv[3] || 1180);
 const H = +(process.argv[4] || 820);
 const ONLY = process.argv[5] || '';
 
-const PARTS = {
-  head: [100, 40], eyes: [74, 92], nose: [100, 105], mouth: [100, 121], hands: [52, 190], tummy: [100, 197], feet: [78, 228],
-  ears: { momo: [66, 30], puff: [28, 110], lulu: [22, 52] },
-};
-const ZONES = { mouth: [100, 120], face: [100, 98], hands: [52, 190], body: [100, 192], head: [100, 60] };
+// filled from js/characters.js once the page is loaded
+let PARTS = {};
+let ZONES = {};
 
 async function artPoint(page, vx, vy) {
   const r = await page.$eval('.buddy-art', (el) => { const b = el.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; });
@@ -104,6 +102,17 @@ async function solve(page, label) {
   await page.goto(BASE);
   await page.click('.big-play', { force: true });
   await page.waitForTimeout(500);
+  const geo = await page.evaluate(async () => {
+    const m = await import('./js/characters.js');
+    const parts = { ears: {} };
+    for (const [k, v] of Object.entries(m.PARTS)) if (v.pts) parts[k] = v.pts[0];
+    for (const id of m.ORDER) parts.ears[id] = m.CHARS[id].ears[0];
+    const zones = {};
+    for (const [k, v] of Object.entries(m.ZONES)) zones[k] = v.pts[0];
+    return { parts, zones };
+  });
+  PARTS = geo.parts;
+  ZONES = geo.zones;
   const units = await page.evaluate(async () => (await import('./js/content/units.js')).UNITS.map((u) => ({ id: u.id, n: u.activities.length, types: u.activities.map((a) => a.type) })));
   let ok = 0, fail = 0;
   for (const u of units) {

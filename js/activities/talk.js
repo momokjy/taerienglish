@@ -172,7 +172,7 @@ export default async function talk(ctx, act) {
     picked.classList.add('picked');
     sfx.pop();
     // the child's line, spoken in a light "kid" voice
-    await ctx.say({ say: (t) => speak(fill(t, 'say'), { pitch: 1.65, rate: 1 }) }, o.t);
+    await ctx.say({ say: (t) => speak(fill(t, 'say'), { pitch: 1.85, rate: 1 }) }, o.t);
     await ctx.wait(250);
     bottom.replaceChildren();
     if (o.then) await run(o.then);

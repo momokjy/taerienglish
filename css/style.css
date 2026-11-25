@@ -559,6 +559,7 @@ button {
   filter: drop-shadow(0 6px 8px rgba(91, 63, 82, 0.2));
 }
 .char-svg {
+  overflow: visible;
   filter: drop-shadow(0 6px 6px rgba(91, 63, 82, 0.18));
 }
 .mood-badge {
@@ -627,32 +628,38 @@ button {
   transform-box: view-box;
 }
 .char-svg .c-ear-l {
-  transform-origin: 74px 72px;
+  transform-origin: 80px 74px;
 }
 .char-svg .c-ear-r {
-  transform-origin: 126px 72px;
+  transform-origin: 126px 66px;
 }
 .kind-puppy .c-ear-l {
-  transform-origin: 46px 56px;
+  transform-origin: 60px 46px;
 }
 .kind-puppy .c-ear-r {
-  transform-origin: 154px 56px;
+  transform-origin: 140px 46px;
+}
+.kind-fairy .c-ear-l {
+  transform-origin: 44px 80px;
+}
+.kind-fairy .c-ear-r {
+  transform-origin: 156px 80px;
 }
 .char-svg .c-arm-l {
-  transform-origin: 66px 166px;
+  transform-origin: 72px 178px;
 }
 .char-svg .c-arm-r {
-  transform-origin: 134px 166px;
+  transform-origin: 128px 178px;
 }
 .char-svg .c-head {
-  transform-origin: 100px 150px;
+  transform-origin: 100px 168px;
 }
 .char-svg .c-wings {
-  transform-origin: 100px 175px;
+  transform-origin: 100px 190px;
   animation: flutter 1.2s ease-in-out infinite;
 }
 .char-svg .c-tail {
-  transform-origin: 140px 204px;
+  transform-origin: 136px 208px;
   animation: wag 0.9s ease-in-out infinite alternate;
 }
 @keyframes flutter {
@@ -1037,7 +1044,7 @@ button {
 }
 .dirt-germ {
   width: auto;
-  font-size: calc(var(--u, 2px) * 8 * var(--s, 1));
+  font-size: calc(var(--u, 2px) * 6.5 * var(--s, 1));
   animation: germ 1s ease-in-out infinite alternate;
 }
 @keyframes germ {
@@ -1233,6 +1240,27 @@ button {
   aspect-ratio: 1;
   border-radius: 50%;
   background: #ffc93c;
+}
+.num-dots i:nth-child(3n + 2) {
+  background: #ff9ec4;
+}
+.num-dots i:nth-child(3n) {
+  background: #8fd3ff;
+}
+.card::after {
+  content: '✦';
+  position: absolute;
+  top: 7%;
+  right: 9%;
+  font-size: clamp(10px, 9cqw, 22px);
+  line-height: 1;
+  color: #ffc6dc;
+  pointer-events: none;
+}
+.card:nth-child(even)::after {
+  color: #bfe3ff;
+  right: auto;
+  left: 9%;
 }
 .card.flip .cover {
   position: absolute;
@@ -2471,6 +2499,11 @@ button {
 .p-val {
   min-width: 36px;
   font-weight: 600;
+}
+.p-small {
+  font-size: 12px;
+  color: var(--ink-soft);
+  white-space: nowrap;
 }
 .p-btn {
   display: inline-flex;

@@ -2,7 +2,7 @@
 
 import { h } from '../core/util.js';
 import { store, save, resetProgress, doneCount } from '../core/store.js';
-import { englishVoices, onVoices, resetVoice, speak, hasTTS } from '../core/speech.js';
+import { englishVoices, onVoices, resetVoice, speak, hasTTS, youngTag } from '../core/speech.js';
 import { canRecognize } from '../core/mic.js';
 import { mount, go } from '../core/nav.js';
 import { ORDER, CHARS, charArt, charName } from '../characters.js';
@@ -59,13 +59,16 @@ export function parentScreen() {
     s.childSay = sayIn.value.trim() || s.childName;
     commit();
   });
-  const testName = h('button', { class: 'p-btn', type: 'button', onClick: () => speak(`Hello, ${s.childSay || s.childName}!`, { pitch: 1.3 }) }, '🔊 들어보기');
+  const testName = h('button', { class: 'p-btn', type: 'button', onClick: () => speak(`Hello, ${s.childSay || s.childName}!`, { pitch: CHARS.momo.pitch }) }, '🔊 들어보기');
 
   // --- voice
   const voiceSel = h('select');
   const fillVoices = () => {
     const vs = englishVoices();
-    voiceSel.replaceChildren(h('option', { value: '' }, '자동 선택 (추천)'), ...vs.map((v) => h('option', { value: v.voiceURI, selected: v.voiceURI === s.voiceURI }, `${v.name} (${v.lang})`)));
+    const young = vs.filter((v) => youngTag(v));
+    const rest = vs.filter((v) => !youngTag(v));
+    const opt = (v) => h('option', { value: v.voiceURI, selected: v.voiceURI === s.voiceURI }, `${youngTag(v) ? '⭐ ' : ''}${v.name} (${v.lang})${youngTag(v) ? ' — ' + youngTag(v) : ''}`);
+    voiceSel.replaceChildren(h('option', { value: '' }, '자동 선택 (어린 목소리 우선)'), ...young.map(opt), ...rest.map(opt));
   };
   fillVoices();
   onVoices(fillVoices);
@@ -73,7 +76,7 @@ export function parentScreen() {
     s.voiceURI = voiceSel.value;
     resetVoice();
     commit();
-    speak('Hi! I am your English friend.', { pitch: 1.3 });
+    speak("Hi! I'm your English friend!", { pitch: CHARS.momo.pitch });
   });
   const rateIn = h('input', { type: 'range', min: '0.6', max: '1.1', step: '0.05', value: String(s.rate) });
   const rateOut = h('span', { class: 'p-val' }, String(s.rate));
@@ -81,8 +84,27 @@ export function parentScreen() {
   rateIn.addEventListener('change', () => {
     s.rate = +rateIn.value;
     commit();
-    speak('Good morning! Let us play!', { pitch: 1.3 });
+    speak("Good morning! Let's play!", { pitch: CHARS.momo.pitch });
   });
+  const pitchIn = h('input', { type: 'range', min: '0.8', max: '1.25', step: '0.05', value: String(s.pitch || 1) });
+  const pitchOut = h('span', { class: 'p-val' }, String(s.pitch || 1));
+  pitchIn.addEventListener('input', () => (pitchOut.textContent = pitchIn.value));
+  pitchIn.addEventListener('change', () => {
+    s.pitch = +pitchIn.value;
+    commit();
+    speak("Hi! I'm Momo! Let's play!", { pitch: CHARS.momo.pitch });
+  });
+  const hearAll = h(
+    'button',
+    {
+      class: 'p-btn',
+      type: 'button',
+      onClick: async () => {
+        for (const id of ORDER) await speak(`Hi! I'm ${charName(id)}!`, { pitch: CHARS[id].pitch });
+      },
+    },
+    '🔊 세 친구 들어보기',
+  );
 
   // --- mic
   const micIn = h('input', { type: 'checkbox', checked: s.mic !== false });
@@ -172,7 +194,7 @@ export function parentScreen() {
 
   const support = [];
   if (!hasTTS) support.push('이 브라우저는 영어 음성(TTS)을 지원하지 않아요. Safari 또는 Chrome을 사용해 주세요.');
-  if (hasTTS && !englishVoices().length) support.push('영어 음성을 아직 찾지 못했어요. 잠시 뒤 다시 열어 보거나, 기기 설정 → 손쉬운 사용 → 음성 콘텐츠에서 영어 음성을 내려받아 주세요.');
+  if (hasTTS && !englishVoices().length) support.push('영어 음성을 아직 찾지 못했어요. 잠시 뒤 다시 열어 보거나, 기기 설정 → 손쉬운 사용 → 콘텐츠 말하기(또는 읽기 및 말하기) → 음성에서 영어 음성을 내려받아 주세요.');
   if (!canRecognize()) support.push('이 브라우저는 음성 인식을 지원하지 않아요. 말하기 활동에서는 마이크 소리 크기로만 확인하거나, 친구가 잠깐 들어 준 뒤 칭찬해 줘요.');
 
   const screen = h(
@@ -196,7 +218,21 @@ export function parentScreen() {
         ...support.map((t) => h('p', { class: 'p-warn' }, t)),
       ),
       section('아이 이름', row('화면에 보일 이름', nameIn), row('영어 발음용 철자', sayIn, testName), h('p', { class: 'p-help' }, '영어 음성이 이름을 어색하게 읽으면 발음용 철자를 바꿔 보세요. (예: Taeri → Tae-ri, Teh-ree)')),
-      section('목소리', row('영어 목소리', voiceSel), row('말하기 속도', rateIn, rateOut), h('p', { class: 'p-help' }, 'iPad는 "Samantha", 안드로이드는 "English United States" 목소리가 자연스러워요. 기기 설정에서 고품질 음성을 내려받으면 더 좋아져요.')),
+      section(
+        '목소리',
+        row('영어 목소리', voiceSel),
+        row('목소리 높이', h('span', { class: 'p-small' }, '낮게'), pitchIn, h('span', { class: 'p-small' }, '높게'), pitchOut),
+        row('말하기 속도', rateIn, rateOut),
+        h('div', { class: 'p-row' }, hearAll),
+        h(
+          'p',
+          { class: 'p-help' },
+          '친구들 목소리는 기본보다 높고 귀엽게 나와요. 더 어리게 하려면 "목소리 높이"를 올려 보세요. ',
+          '목록의 ⭐는 어리게 들리는 목소리예요 (Windows Edge의 "Ana"는 어린이 목소리). ',
+          'iPhone/iPad는 설정 → 손쉬운 사용 → "콘텐츠 말하기"(iOS 버전에 따라 "읽기 및 말하기") → 음성 → 영어에서 "Nicky"를 내려받으면 더 앳된 목소리를 쓸 수 있어요. ',
+          '기기에 따라 높이 조절이 적용되지 않는 목소리도 있어요.',
+        ),
+      ),
       section('말하기 활동', row('마이크 사용', micIn), h('p', { class: 'p-help' }, '끄면 친구가 잠깐 들어 주는 척한 뒤 칭찬해요. (마이크 권한을 묻지 않아요) 일부 iPhone/iPad에서 말하기 활동 뒤 소리가 작아지면 이 옵션을 꺼 주세요.')),
       section('친구 캐릭터', h('p', { class: 'p-help' }, '이름과 사진을 바꿀 수 있어요. 아이가 좋아하는 인형 사진 등을 넣어 보세요. 사진은 이 기기 안에만 저장돼요. (표정이 바뀌는 활동과 몸 활동에는 기본 그림이 쓰여요)'), ...charRows),
       section('학습 기록', h('p', null, `⭐ ${store.stars}개 · 스티커 ${store.stickers.length}/${UNITS.length}개`), prog, resetBtn),

@@ -15,12 +15,23 @@ export const PRAISE = ['Yes!', 'Great!', 'Good job!', "That's right!", 'Wow!', '
 
 // ---------------------------------------------------------------- pictures
 
+/** A tiny kawaii face (eyes, smile, blush) centred on (x, y), scale s. */
+export function faceSVG(x, y, s = 1) {
+  const e = (dx) => `<ellipse cx="${x + dx * s}" cy="${y}" rx="${3.4 * s}" ry="${4.2 * s}" fill="#4A2F3F"/><circle cx="${x + dx * s + 1.2 * s}" cy="${y - 1.6 * s}" r="${1.4 * s}" fill="#fff"/>`;
+  return (
+    e(-9) +
+    e(9) +
+    `<path d="M${x - 3.5 * s} ${y + 6 * s} Q${x} ${y + 9.5 * s} ${x + 3.5 * s} ${y + 6 * s}" fill="none" stroke="#4A2F3F" stroke-width="${1.8 * s}" stroke-linecap="round"/>` +
+    `<ellipse cx="${x - 15 * s}" cy="${y + 5 * s}" rx="${4.5 * s}" ry="${2.6 * s}" fill="#FF7FA8" opacity=".55"/><ellipse cx="${x + 15 * s}" cy="${y + 5 * s}" rx="${4.5 * s}" ry="${2.6 * s}" fill="#FF7FA8" opacity=".55"/>`
+  );
+}
+
 export function blobSVG(color) {
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8 C 66 6, 74 20, 86 26 C 98 34, 94 52, 92 62 C 90 78, 76 92, 58 92 C 44 94, 30 92, 20 82 C 8 70, 6 54, 12 40 C 18 26, 34 10, 50 8 Z" fill="${color}" stroke="rgba(0,0,0,.12)" stroke-width="3"/><ellipse cx="36" cy="32" rx="11" ry="6" fill="#fff" opacity=".5" transform="rotate(-30 36 32)"/></svg>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8 C 66 6, 74 20, 86 26 C 98 34, 94 52, 92 62 C 90 78, 76 92, 58 92 C 44 94, 30 92, 20 82 C 8 70, 6 54, 12 40 C 18 26, 34 10, 50 8 Z" fill="${color}" stroke="rgba(0,0,0,.12)" stroke-width="3"/><ellipse cx="34" cy="28" rx="11" ry="6" fill="#fff" opacity=".5" transform="rotate(-30 34 28)"/>${faceSVG(52, 54, 1.25)}</svg>`;
 }
 
 export function balloonSVG(color) {
-  return `<svg viewBox="0 0 100 150" aria-hidden="true"><path d="M50 108 Q 46 128 54 150" fill="none" stroke="#9B8A95" stroke-width="2"/><ellipse cx="50" cy="52" rx="40" ry="48" fill="${color}" stroke="rgba(0,0,0,.12)" stroke-width="2"/><path d="M44 100 L56 100 L50 110 Z" fill="${color}"/><ellipse cx="34" cy="34" rx="9" ry="15" fill="#fff" opacity=".45" transform="rotate(25 34 34)"/></svg>`;
+  return `<svg viewBox="0 0 100 150" aria-hidden="true"><path d="M50 108 Q 46 128 54 150" fill="none" stroke="#9B8A95" stroke-width="2"/><ellipse cx="50" cy="52" rx="40" ry="48" fill="${color}" stroke="rgba(0,0,0,.12)" stroke-width="2"/><path d="M44 100 L56 100 L50 110 Z" fill="${color}"/><ellipse cx="32" cy="30" rx="8" ry="13" fill="#fff" opacity=".45" transform="rotate(25 32 30)"/>${faceSVG(50, 56, 1.05)}</svg>`;
 }
 
 export function numberArt(n) {
@@ -196,7 +207,7 @@ export class Narrator {
     this.el.textContent = fill(text);
     this.el.classList.add('show');
     try {
-      await speak(fill(text, 'say'), { pitch: 1.0, rate });
+      await speak(fill(text, 'say'), { pitch: 1.35, rate });
     } finally {
       setTimeout(() => tok === this._t && this.el.classList.remove('show'), 1500);
     }

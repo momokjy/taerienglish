@@ -12,7 +12,13 @@ const synth = typeof window !== 'undefined' && 'speechSynthesis' in window ? win
 
 // Novelty voices we never want to pick automatically.
 const BAD = /(bad news|bahh|bells|boing|bubbles|cellos|wobble|zarvox|whisper|trinoids|organ|jester|superstar|albert|fred|junior|ralph|good news|deranged|hysterical|grandpa|grandma|eddy|reed|rocko|sandy|shelley|flo\b)/i;
-const PREFER = [/samantha/i, /natural/i, /google us english/i, /aria/i, /jenny/i, /\bava\b/i, /allison/i, /susan/i, /karen/i, /moira/i, /tessa/i, /serena/i, /zira/i, /google uk english female/i];
+// Young / bright voices first: Microsoft "Ana" is a child voice, Apple "Nicky" sounds young.
+const PREFER = [/\bana\b/i, /nicky/i, /samantha/i, /jenny/i, /aria/i, /\bava\b/i, /allison/i, /susan/i, /google us english/i, /karen/i, /tessa/i, /moira/i, /serena/i, /zira/i, /google uk english female/i, /natural/i];
+// Grown-up male voices sound least like a little friend.
+const MALE = /\b(daniel|alex|fred|tom|aaron|arthur|gordon|guy|david|mark|james|george|ryan|eric|christopher|brian|evan|nathan|oliver|rishi|lee|roger|steffan|andrew|thomas|liam|reed|eddy|rocko|grandpa)\b/i;
+
+/** Voices worth recommending to parents for a child-like sound. */
+export const youngTag = (v) => (/\bana\b/i.test(v.name) ? '어린이 목소리' : /junior/i.test(v.name) ? '어린이 목소리(기계음)' : /nicky/i.test(v.name) ? '앳된 목소리' : '');
 
 let voices = [];
 let cached = null;
@@ -53,6 +59,8 @@ export function currentVoice() {
     const i = PREFER.findIndex((r) => r.test(v.name));
     if (i >= 0) s += 20 - i;
     if (BAD.test(v.name)) s -= 30;
+    if (MALE.test(v.name)) s -= 15;
+    if (/enhanced|premium/i.test(v.name)) s += 2;
     return s;
   };
   return (cached = en.slice().sort((a, b) => score(b) - score(a))[0]);
@@ -79,7 +87,7 @@ export function speak(text, { pitch = 1, rate = 1 } = {}) {
       u.lang = v.lang;
     } else u.lang = 'en-US';
     u.rate = r;
-    u.pitch = Math.max(0, Math.min(2, pitch));
+    u.pitch = Math.max(0, Math.min(2, pitch * (store.settings.pitch || 1)));
     u.volume = 1;
 
     let done = false;

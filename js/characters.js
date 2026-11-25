@@ -13,9 +13,9 @@ import { W } from './content/vocab.js';
 export const ORDER = ['momo', 'puff', 'lulu'];
 
 export const CHARS = {
-  momo: { id: 'momo', name: 'Momo', kind: 'bunny', pitch: 1.3, body: '#FFE6EF', belly: '#FFFFFF', inner: '#FFB3CB', accent: '#FF8FB7', nose: '#FF7AA2', ears: [[66, 30], [134, 30]] },
-  puff: { id: 'puff', name: 'Puff', kind: 'puppy', pitch: 1.1, body: '#E9F6FF', belly: '#FFFFFF', inner: '#C9E8FC', accent: '#A3D5F7', nose: '#4F6C8E', ears: [[28, 110], [172, 110]] },
-  lulu: { id: 'lulu', name: 'Lulu', kind: 'fairy', pitch: 1.5, body: '#FFD3E8', belly: '#FFF4FA', inner: '#FFE8F2', accent: '#FF6FA5', nose: '#FF6F9C', ears: [[22, 52], [178, 52]] },
+  momo: { id: 'momo', name: 'Momo', kind: 'bunny', pitch: 1.55, body: '#FFEAF2', belly: '#FFFFFF', inner: '#FFB9CF', accent: '#FF7FAA', nose: '#FF8FB0', eye: '#B0567E', ears: [[79, 12], [154, 12]] },
+  puff: { id: 'puff', name: 'Puff', kind: 'puppy', pitch: 1.4, body: '#EEF8FF', belly: '#FFFFFF', inner: '#CDE9FC', accent: '#B5DDF8', nose: '#6A86A8', eye: '#4F86C2', ears: [[26, 110], [174, 110]] },
+  lulu: { id: 'lulu', name: 'Lulu', kind: 'fairy', pitch: 1.7, body: '#FFDDEE', belly: '#FFF5FA', inner: '#FFB3D3', accent: '#FF6FA8', nose: '#FF7FAA', eye: '#B04D8C', ears: [[28, 60], [172, 60]] },
 };
 
 export const MOODS = ['happy', 'joy', 'sad', 'angry', 'sleepy', 'scared', 'surprised', 'yummy', 'love', 'hungry'];
@@ -39,9 +39,12 @@ export function fill(text, mode = 'show') {
 }
 
 // ---------------------------------------------------------------- SVG art
+// Chibi proportions: big head, tiny body, big sparkly eyes set low on the face.
 
-const L = '#6B4A5A';
+const L = '#7A4D63';
 const SW = `stroke="${L}" stroke-width="3" stroke-linejoin="round"`;
+const MOUTH = '#C2456A';
+const TONGUE = '#FF9EB2';
 
 export const heartPath = (x, y, s) =>
   `M${x} ${y + s * 0.9} C ${x - s * 1.6} ${y - s * 0.1}, ${x - s * 0.7} ${y - s * 1.25}, ${x} ${y - s * 0.35} C ${x + s * 0.7} ${y - s * 1.25}, ${x + s * 1.6} ${y - s * 0.1}, ${x} ${y + s * 0.9} Z`;
@@ -49,155 +52,175 @@ export const heartPath = (x, y, s) =>
 function starPath(cx, cy, r) {
   let d = '';
   for (let i = 0; i < 10; i++) {
-    const rr = i % 2 ? r * 0.45 : r;
+    const rr = i % 2 ? r * 0.5 : r;
     const a = -Math.PI / 2 + (i * Math.PI) / 5;
     d += (i ? 'L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr).toFixed(1) + ' ';
   }
   return d + 'Z';
 }
 
+const mirror = (d) => d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m, x, y) => `${200 - +x} ${y}`);
+
 function backParts(c) {
   if (c.kind === 'bunny')
     return `
-    <g class="c-ear c-ear-l"><ellipse cx="70" cy="38" rx="17" ry="38" transform="rotate(-14 70 38)" fill="${c.body}" ${SW}/><ellipse cx="70" cy="42" rx="8" ry="26" transform="rotate(-14 70 42)" fill="${c.inner}"/></g>
-    <g class="c-ear c-ear-r"><ellipse cx="130" cy="38" rx="17" ry="38" transform="rotate(14 130 38)" fill="${c.body}" ${SW}/><ellipse cx="130" cy="42" rx="8" ry="26" transform="rotate(14 130 42)" fill="${c.inner}"/></g>`;
-  if (c.kind === 'puppy')
-    return `
-    <path class="c-tail" d="M138 204 C 162 208, 172 186, 160 176 C 152 170, 144 180, 152 186" fill="none" stroke="${L}" stroke-width="10" stroke-linecap="round"/>
-    <path d="M138 204 C 162 208, 172 186, 160 176 C 152 170, 144 180, 152 186" fill="none" stroke="${c.body}" stroke-width="5" stroke-linecap="round"/>`;
-  // fairy
+    <g class="c-ear c-ear-l"><ellipse cx="74" cy="32" rx="17" ry="44" transform="rotate(-10 74 32)" fill="${c.body}" ${SW}/><ellipse cx="74" cy="34" rx="8.5" ry="32" transform="rotate(-10 74 34)" fill="${c.inner}"/></g>
+    <g class="c-ear c-ear-r"><ellipse cx="142" cy="34" rx="16" ry="40" transform="rotate(30 142 34)" fill="${c.body}" ${SW}/><ellipse cx="141" cy="37" rx="8" ry="28" transform="rotate(30 141 37)" fill="${c.inner}"/></g>`;
+  if (c.kind === 'puppy') {
+    const tail = 'M134 210 C 160 214, 170 190, 158 180 C 150 174, 141 184, 149 190';
+    return `<path class="c-tail" d="${tail}" fill="none" stroke="${L}" stroke-width="11" stroke-linecap="round"/><path class="c-tail" d="${tail}" fill="none" stroke="${c.body}" stroke-width="5.5" stroke-linecap="round"/>`;
+  }
+  // fairy: wings, pointy ears, heart antenna
+  const up = 'M72 182 C 42 142, 4 150, 12 178 C 18 198, 52 196, 72 188 Z';
+  const low = 'M74 194 C 52 202, 34 222, 48 228 C 60 232, 72 214, 76 198 Z';
+  const earL = 'M48 68 L16 36 L36 110 Z';
+  const earLi = 'M44 70 L24 48 L36 96 Z';
   return `
-    <g class="c-wings">
-      <path d="M72 170 C 32 128, 6 160, 20 184 C 30 200, 58 194, 72 182 Z" fill="#FFFFFF" fill-opacity=".92" stroke="${c.accent}" stroke-width="2.5"/>
-      <path d="M128 170 C 168 128, 194 160, 180 184 C 170 200, 142 194, 128 182 Z" fill="#FFFFFF" fill-opacity=".92" stroke="${c.accent}" stroke-width="2.5"/>
-      <path d="${heartPath(34, 172, 5)}" fill="${c.inner}"/><path d="${heartPath(166, 172, 5)}" fill="${c.inner}"/>
+    <g class="c-wings" fill="#FFFFFF" fill-opacity=".94" stroke="${c.accent}" stroke-width="2.5" stroke-linejoin="round">
+      <path d="${up}"/><path d="${low}"/><path d="${mirror(up)}"/><path d="${mirror(low)}"/>
     </g>
-    <g class="c-ear c-ear-l"><path d="M44 62 L12 40 L34 100 Z" fill="${c.body}" ${SW}/></g>
-    <g class="c-ear c-ear-r"><path d="M156 62 L188 40 L166 100 Z" fill="${c.body}" ${SW}/></g>
-    <path d="M100 36 Q 93 24 100 16" fill="none" stroke="${L}" stroke-width="3" stroke-linecap="round"/>
-    <path class="c-heart" d="${heartPath(100, 12, 9)}" fill="${c.accent}" ${SW}/>`;
+    <path d="${heartPath(30, 172, 5)}" fill="${c.inner}"/><path d="${heartPath(170, 172, 5)}" fill="${c.inner}"/>
+    <g class="c-ear c-ear-l"><path d="${earL}" fill="${c.body}" ${SW}/><path d="${earLi}" fill="${c.inner}"/></g>
+    <g class="c-ear c-ear-r"><path d="${mirror(earL)}" fill="${c.body}" ${SW}/><path d="${mirror(earLi)}" fill="${c.inner}"/></g>
+    <path d="M100 38 Q 93 28 100 21" fill="none" stroke="${L}" stroke-width="3" stroke-linecap="round"/>
+    <g class="c-heart"><path d="${heartPath(100, 13, 9.5)}" fill="${c.accent}" ${SW}/><ellipse cx="95" cy="9" rx="2.6" ry="1.8" fill="#fff" opacity=".85"/></g>`;
 }
 
 function frontParts(c) {
   if (c.kind === 'bunny') {
-    const petals = [0, 72, 144, 216, 288]
-      .map((a) => `<circle cx="${(Math.cos((a * Math.PI) / 180) * 8).toFixed(1)}" cy="${(Math.sin((a * Math.PI) / 180) * 8).toFixed(1)}" r="7" fill="#fff" stroke="${L}" stroke-width="2"/>`)
-      .join('');
-    return `<g class="c-flower" transform="translate(146 46)">${petals}<circle r="5.5" fill="#FFD54F" stroke="${L}" stroke-width="2"/></g>`;
+    const loop = 'M100 36 C 90 22, 72 26, 74 38 C 76 50, 90 46, 100 36 Z';
+    return `<g class="c-bow">
+      <path d="${loop}" fill="${c.accent}" ${SW}/><path d="${mirror(loop)}" fill="${c.accent}" ${SW}/>
+      <circle cx="86" cy="35" r="2.4" fill="#fff"/><circle cx="80" cy="41" r="1.7" fill="#fff"/><circle cx="114" cy="35" r="2.4" fill="#fff"/><circle cx="120" cy="41" r="1.7" fill="#fff"/>
+      <circle cx="100" cy="36" r="5.5" fill="${c.accent}" ${SW}/></g>`;
   }
-  if (c.kind === 'puppy')
+  if (c.kind === 'puppy') {
+    const ear = 'M60 44 C 30 40, 6 80, 8 120 C 9 146, 22 160, 34 152 C 46 144, 46 120, 50 100 C 54 80, 66 56, 60 44 Z';
     return `
-    <g class="c-ear c-ear-l"><path d="M46 50 C 12 56, 4 128, 24 148 C 38 160, 58 142, 58 110 C 58 84, 58 58, 46 50 Z" fill="${c.accent}" ${SW}/></g>
-    <g class="c-ear c-ear-r"><path d="M154 50 C 188 56, 196 128, 176 148 C 162 160, 142 142, 142 110 C 142 84, 142 58, 154 50 Z" fill="${c.accent}" ${SW}/></g>
-    <path d="${starPath(100, 48, 10)}" fill="#FFE066" stroke="${L}" stroke-width="2" stroke-linejoin="round"/>`;
-  return `<path d="${heartPath(150, 50, 5)}" fill="${c.accent}" opacity=".7"/>`;
+    <g class="c-ear c-ear-l"><path d="${ear}" fill="${c.accent}" ${SW}/></g>
+    <g class="c-ear c-ear-r"><path d="${mirror(ear)}" fill="${c.accent}" ${SW}/></g>
+    <path d="${starPath(100, 52, 10)}" fill="#FFE066" stroke="${L}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  }
+  return '';
 }
 
-function eyesSvg(mood) {
-  const n = (cx) => `<ellipse cx="${cx}" cy="92" rx="7.5" ry="9.5" fill="${L}"/><circle cx="${cx + 2.5}" cy="88" r="3" fill="#fff"/>`;
-  const arc = (cx) => `<path d="M${cx - 9} 95 Q${cx} 83 ${cx + 9} 95" fill="none" stroke="${L}" stroke-width="4" stroke-linecap="round"/>`;
-  const closed = (cx) => `<path d="M${cx - 9} 92 Q${cx} 100 ${cx + 9} 92" fill="none" stroke="${L}" stroke-width="4" stroke-linecap="round"/>`;
-  const big = (cx) => `<circle cx="${cx}" cy="92" r="11" fill="#fff" stroke="${L}" stroke-width="3"/><circle cx="${cx}" cy="93" r="4.5" fill="${L}"/>`;
-  const wide = (cx) => `<ellipse cx="${cx}" cy="91" rx="8.5" ry="11.5" fill="${L}"/><circle cx="${cx + 3}" cy="86" r="3.4" fill="#fff"/>`;
-  const heart = (cx) => `<path d="${heartPath(cx, 92, 7)}" fill="#FF4F8B" stroke="${L}" stroke-width="2"/>`;
+function eyesSvg(mood, c) {
+  const n = (cx) =>
+    `<ellipse cx="${cx}" cy="108" rx="11" ry="13.5" fill="#3E2A37"/><ellipse cx="${cx}" cy="113" rx="6.5" ry="5" fill="${c.eye}" opacity=".8"/>` +
+    `<ellipse cx="${cx + 3.6}" cy="102.6" rx="4.6" ry="5.2" fill="#fff"/><circle cx="${cx - 4}" cy="113.5" r="2.1" fill="#fff"/>`;
+  const arc = (cx) => `<path d="M${cx - 11} 111 Q${cx} 96 ${cx + 11} 111" fill="none" stroke="${L}" stroke-width="5" stroke-linecap="round"/>`;
+  const closed = (cx) => `<path d="M${cx - 11} 107 Q${cx} 116 ${cx + 11} 107" fill="none" stroke="${L}" stroke-width="4.5" stroke-linecap="round"/>`;
+  const big = (cx) => `<circle cx="${cx}" cy="108" r="12.5" fill="#fff" stroke="${L}" stroke-width="3"/><circle cx="${cx}" cy="109" r="4.8" fill="#3E2A37"/><circle cx="${cx + 1.6}" cy="107.4" r="1.5" fill="#fff"/>`;
+  const wide = (cx) =>
+    `<ellipse cx="${cx}" cy="107" rx="12" ry="15.5" fill="#3E2A37"/><ellipse cx="${cx}" cy="113" rx="7" ry="5.5" fill="${c.eye}" opacity=".8"/><ellipse cx="${cx + 4}" cy="100.5" rx="5" ry="5.8" fill="#fff"/><circle cx="${cx - 4.5}" cy="113" r="2.4" fill="#fff"/>`;
+  const heart = (cx) => `<path d="${heartPath(cx, 108, 10)}" fill="#FF4F8B" stroke="${L}" stroke-width="2.2"/><ellipse cx="${cx - 5}" cy="103" rx="2.6" ry="1.8" fill="#fff" opacity=".9"/>`;
   switch (mood) {
     case 'joy':
     case 'yummy':
-      return arc(74) + arc(126);
+      return arc(70) + arc(130);
     case 'sleepy':
-      return closed(74) + closed(126);
+      return closed(70) + closed(130);
     case 'scared':
-      return big(74) + big(126);
+      return big(70) + big(130);
     case 'surprised':
-      return wide(74) + wide(126);
+      return wide(70) + wide(130);
     case 'love':
-      return heart(74) + heart(126);
+      return heart(70) + heart(130);
     default:
-      return `<g class="c-blink">${n(74)}${n(126)}</g>`;
+      return `<g class="c-blink">${n(70)}${n(130)}</g>`;
   }
 }
 
 function browsSvg(mood) {
   const s = `fill="none" stroke="${L}" stroke-width="3.5" stroke-linecap="round"`;
-  if (mood === 'sad') return `<path d="M62 78 L84 71" ${s}/><path d="M138 78 L116 71" ${s}/>`;
-  if (mood === 'angry') return `<path d="M62 71 L85 80" ${s}/><path d="M138 71 L115 80" ${s}/>`;
-  if (mood === 'surprised' || mood === 'scared') return `<path d="M64 72 Q74 64 84 72" ${s}/><path d="M116 72 Q126 64 136 72" ${s}/>`;
+  if (mood === 'sad') return `<path d="M56 90 L80 84" ${s}/><path d="M144 90 L120 84" ${s}/>`;
+  if (mood === 'angry') return `<path d="M56 83 L81 92" ${s}/><path d="M144 83 L119 92" ${s}/>`;
+  if (mood === 'surprised' || mood === 'scared') return `<path d="M58 87 Q70 78 82 87" ${s}/><path d="M118 87 Q130 78 142 87" ${s}/>`;
   return '';
 }
 
 function mouthSvg(mood) {
-  const st = `fill="none" stroke="${L}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"`;
-  const open = `<g class="m-open"><path d="M88 114 Q100 135 112 114 Z" fill="#B23F5F" stroke="${L}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="100" cy="124" rx="6" ry="3.5" fill="#FF8FA8"/></g>`;
+  const st = `fill="none" stroke="${L}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"`;
+  const fillM = `fill="${MOUTH}" stroke="${L}" stroke-width="2.8" stroke-linejoin="round"`;
+  const open = `<g class="m-open"><path d="M91 124 Q100 141 109 124 Z" ${fillM}/><ellipse cx="100" cy="133" rx="4.6" ry="2.8" fill="${TONGUE}"/></g>`;
   let closed;
   switch (mood) {
     case 'sad':
-      closed = `<path d="M89 123 Q100 113 111 123" ${st}/>`;
+      closed = `<path d="M93 132 Q100 125 107 132" ${st}/>`;
       break;
     case 'angry':
-      closed = `<path d="M88 122 Q94 116 100 120 Q106 116 112 122" ${st}/>`;
+      closed = `<path d="M91 131 Q95 126 100 129 Q105 126 109 131" ${st}/>`;
       break;
     case 'sleepy':
-      closed = `<ellipse cx="100" cy="119" rx="4" ry="5" fill="#B23F5F" stroke="${L}" stroke-width="2.5"/>`;
+      closed = `<ellipse cx="100" cy="129" rx="3.6" ry="4.6" ${fillM}/>`;
       break;
     case 'scared':
-      closed = `<path d="M86 121 q3.5 -5 7 0 q3.5 5 7 0 q3.5 -5 7 0 q3.5 5 7 0" ${st}/>`;
+      closed = `<path d="M88 129 q3 -4 6 0 q3 4 6 0 q3 -4 6 0 q3 4 6 0" ${st}/>`;
       break;
     case 'surprised':
-      closed = `<ellipse cx="100" cy="121" rx="7" ry="9" fill="#B23F5F" stroke="${L}" stroke-width="3"/>`;
+      closed = `<ellipse cx="100" cy="130" rx="6" ry="7.5" ${fillM}/>`;
       break;
     case 'hungry':
-      closed = `<ellipse cx="100" cy="120" rx="6" ry="7" fill="#B23F5F" stroke="${L}" stroke-width="3"/><path d="M108 124 q3 7 0 10 q-3 -3 0 -10z" fill="#9FD8FF"/>`;
+      closed = `<ellipse cx="100" cy="129" rx="5.5" ry="6.2" ${fillM}/><path d="M107 132 q3 7 0 10 q-3 -3 0 -10z" fill="#9FD8FF"/>`;
       break;
     case 'yummy':
-      closed = `<path d="M87 113 Q100 131 113 113 Z" fill="#B23F5F" stroke="${L}" stroke-width="3" stroke-linejoin="round"/><path d="M96 120 Q102 134 109 120 Z" fill="#FF8FA8" stroke="${L}" stroke-width="2"/>`;
+      closed = `<path d="M89 123 Q100 141 111 123 Z" ${fillM}/><path d="M97 129 Q104 144 110 127 Z" fill="${TONGUE}" stroke="${L}" stroke-width="2"/>`;
       break;
     case 'joy':
     case 'love':
-      closed = `<path d="M87 113 Q100 132 113 113 Z" fill="#B23F5F" stroke="${L}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="100" cy="123" rx="6" ry="3.5" fill="#FF8FA8"/>`;
+      closed = `<path d="M89 123 Q100 143 111 123 Z" ${fillM}/><ellipse cx="100" cy="134" rx="5" ry="3" fill="${TONGUE}"/>`;
       break;
     default:
-      closed = `<path d="M89 114 Q100 125 111 114" ${st}/>`;
+      closed = `<path d="M91 125 Q95.5 130.5 100 126 Q104.5 130.5 109 125" ${st}/>`;
   }
   return `<g class="m-closed">${closed}</g>${open}`;
 }
 
+function cheeksSvg(mood, c) {
+  const col = mood === 'angry' ? '#FF6B6B' : '#FF9EBB';
+  const op = mood === 'angry' || mood === 'love' || mood === 'joy' || mood === 'yummy' ? 0.8 : 0.6;
+  const [lx, rx] = c.kind === 'puppy' ? [56, 144] : [47, 153];
+  const lines = (x) =>
+    `<g stroke="#FF7FA3" stroke-width="1.7" stroke-linecap="round" opacity=".75"><path d="M${x - 6} 123 l-2.5 4.5"/><path d="M${x} 123 l-2.5 4.5"/><path d="M${x + 6} 123 l-2.5 4.5"/></g>`;
+  return `<ellipse cx="${lx}" cy="126" rx="12.5" ry="7.5" fill="${col}" opacity="${op}"/><ellipse cx="${rx}" cy="126" rx="12.5" ry="7.5" fill="${col}" opacity="${op}"/>${lines(lx + 1)}${lines(rx + 1)}`;
+}
+
 function extrasSvg(mood) {
-  if (mood === 'sad') return `<path class="c-tear" d="M66 104 q-6 9 0 12 q6 -3 0 -12z" fill="#8FD3FF" stroke="#5AAFE0" stroke-width="1.5"/>`;
+  if (mood === 'sad') return `<path class="c-tear" d="M58 124 q-6 9 0 12 q6 -3 0 -12z" fill="#8FD3FF" stroke="#5AAFE0" stroke-width="1.5"/>`;
   if (mood === 'angry')
-    return `<g transform="translate(152 50)" stroke="#FF4D4D" stroke-width="4" stroke-linecap="round" fill="none"><path d="M-9 -3 Q-3 -3 -3 -9"/><path d="M9 -3 Q3 -3 3 -9"/><path d="M-9 3 Q-3 3 -3 9"/><path d="M9 3 Q3 3 3 9"/></g>`;
+    return `<g transform="translate(160 58)" stroke="#FF4D4D" stroke-width="4" stroke-linecap="round" fill="none"><path d="M-9 -3 Q-3 -3 -3 -9"/><path d="M9 -3 Q3 -3 3 -9"/><path d="M-9 3 Q-3 3 -3 9"/><path d="M9 3 Q3 3 3 9"/></g>`;
   if (mood === 'sleepy')
-    return `<g class="c-zz" fill="#7C8CE0" font-family="Fredoka, Arial, sans-serif" font-weight="700"><text x="150" y="46" font-size="24">z</text><text x="166" y="28" font-size="17">z</text><text x="178" y="15" font-size="12">z</text></g>`;
-  if (mood === 'scared') return `<path d="M152 56 q-6 9 0 12 q6 -3 0 -12z" fill="#8FD3FF" stroke="#5AAFE0" stroke-width="1.5"/>`;
-  if (mood === 'love') return `<path class="c-float-heart" d="${heartPath(166, 40, 7)}" fill="#FF6F9C"/>`;
+    return `<g class="c-zz" fill="#7C8CE0" font-family="Fredoka, Arial, sans-serif" font-weight="700"><text x="154" y="52" font-size="24">z</text><text x="170" y="34" font-size="17">z</text><text x="182" y="20" font-size="12">z</text></g>`;
+  if (mood === 'scared') return `<path d="M160 64 q-6 9 0 12 q6 -3 0 -12z" fill="#8FD3FF" stroke="#5AAFE0" stroke-width="1.5"/>`;
+  if (mood === 'love') return `<path class="c-float-heart" d="${heartPath(172, 46, 7)}" fill="#FF6F9C"/>`;
   return '';
 }
 
 function noseSvg(c) {
-  if (c.kind === 'puppy') return `<ellipse cx="100" cy="105" rx="7" ry="4.6" fill="${c.nose}"/><ellipse cx="98" cy="103.5" rx="2.2" ry="1.2" fill="#fff" opacity=".7"/>`;
-  if (c.kind === 'fairy') return `<ellipse cx="100" cy="105" rx="3.2" ry="2.4" fill="${c.nose}"/>`;
-  return `<ellipse cx="100" cy="105" rx="5" ry="3.6" fill="${c.nose}" stroke="${L}" stroke-width="1.5"/>`;
+  if (c.kind === 'puppy') return `<ellipse cx="100" cy="118" rx="6.2" ry="4.3" fill="${c.nose}"/><ellipse cx="98" cy="116.6" rx="2" ry="1.1" fill="#fff" opacity=".75"/>`;
+  if (c.kind === 'fairy') return `<ellipse cx="100" cy="118" rx="2.8" ry="2.1" fill="${c.nose}"/>`;
+  return `<ellipse cx="100" cy="118" rx="4.2" ry="3.1" fill="${c.nose}"/>`;
 }
 
 export function charSVG(id, mood = 'happy') {
   const c = CHARS[id] || CHARS.momo;
-  const cheek = mood === 'angry' ? '#FF6B6B' : '#FF9DBB';
-  const co = mood === 'angry' || mood === 'love' || mood === 'joy' ? 0.75 : 0.55;
+  const tummyHeart = c.kind === 'fairy' ? `<path d="${heartPath(100, 203, 5.5)}" fill="${c.inner}"/>` : '';
+  const arm = (x, r) => `<ellipse cx="${x}" cy="190" rx="10.5" ry="15.5" transform="rotate(${r} ${x} 190)" fill="${c.body}" ${SW}/>`;
   return `<svg class="char-svg kind-${c.kind}" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <g class="c-all">
+    <ellipse cx="100" cy="236" rx="46" ry="4" fill="#5B3F52" opacity=".08"/>
     <g class="c-back">${backParts(c)}</g>
-    <g class="c-body"><ellipse cx="100" cy="190" rx="46" ry="40" fill="${c.body}" ${SW}/><ellipse cx="100" cy="197" rx="27" ry="24" fill="${c.belly}"/></g>
-    <g class="c-feet"><ellipse cx="78" cy="226" rx="18" ry="11" fill="${c.body}" ${SW}/><ellipse cx="122" cy="226" rx="18" ry="11" fill="${c.body}" ${SW}/></g>
-    <g class="c-arm c-arm-l"><ellipse cx="58" cy="182" rx="12" ry="19" transform="rotate(32 58 182)" fill="${c.body}" ${SW}/></g>
-    <g class="c-arm c-arm-r"><ellipse cx="142" cy="182" rx="12" ry="19" transform="rotate(-32 142 182)" fill="${c.body}" ${SW}/></g>
+    <g class="c-body"><ellipse cx="100" cy="197" rx="40" ry="33" fill="${c.body}" ${SW}/><ellipse cx="100" cy="202" rx="24" ry="20" fill="${c.belly}"/>${tummyHeart}</g>
+    <g class="c-feet"><ellipse cx="80" cy="228" rx="15.5" ry="10" fill="${c.body}" ${SW}/><ellipse cx="120" cy="228" rx="15.5" ry="10" fill="${c.body}" ${SW}/>
+      <ellipse cx="80" cy="230" rx="6" ry="3.5" fill="${c.inner}" opacity=".7"/><ellipse cx="120" cy="230" rx="6" ry="3.5" fill="${c.inner}" opacity=".7"/></g>
     <g class="c-head">
-      <ellipse cx="100" cy="92" rx="70" ry="62" fill="${c.body}" ${SW}/>
+      <ellipse cx="100" cy="100" rx="78" ry="68" fill="${c.body}" ${SW}/>
+      <ellipse cx="70" cy="60" rx="17" ry="8" transform="rotate(-28 70 60)" fill="#fff" opacity=".6"/>
       ${frontParts(c)}
-      <g class="c-face">
-        <ellipse cx="57" cy="111" rx="11" ry="7" fill="${cheek}" opacity="${co}"/>
-        <ellipse cx="143" cy="111" rx="11" ry="7" fill="${cheek}" opacity="${co}"/>
-        ${browsSvg(mood)}${eyesSvg(mood)}${noseSvg(c)}${mouthSvg(mood)}${extrasSvg(mood)}
-      </g>
+      <g class="c-face">${cheeksSvg(mood, c)}${browsSvg(mood)}${eyesSvg(mood, c)}${noseSvg(c)}${mouthSvg(mood)}${extrasSvg(mood)}</g>
     </g>
+    <g class="c-arm c-arm-l">${arm(64, 35)}</g>
+    <g class="c-arm c-arm-r">${arm(136, -35)}</g>
   </g></svg>`;
 }
 
@@ -211,35 +234,35 @@ export function charArt(id, mood = 'happy') {
 // ---------------------------------------------------------------- geometry
 
 export const PARTS = {
-  head: { word: 'head', pts: [[100, 40]] },
-  eyes: { word: 'eyes', pl: true, pts: [[74, 92], [126, 92]] },
+  head: { word: 'head', pts: [[100, 48]] },
+  eyes: { word: 'eyes', pl: true, pts: [[70, 108], [130, 108]] },
   ears: { word: 'ears', pl: true, pts: null },
-  nose: { word: 'nose', pts: [[100, 105]] },
-  mouth: { word: 'mouth', pts: [[100, 121]] },
-  hands: { word: 'hands', pl: true, pts: [[52, 190], [148, 190]] },
-  tummy: { word: 'tummy', pts: [[100, 197]] },
-  feet: { word: 'feet', pl: true, pts: [[78, 228], [122, 228]] },
+  nose: { word: 'nose', pts: [[100, 118]] },
+  mouth: { word: 'mouth', pts: [[100, 129]] },
+  hands: { word: 'hands', pl: true, pts: [[62, 194], [138, 194]] },
+  tummy: { word: 'tummy', pts: [[100, 203]] },
+  feet: { word: 'feet', pl: true, pts: [[80, 230], [120, 230]] },
 };
 export const partPts = (id, part) => (part === 'ears' ? CHARS[id].ears : PARTS[part].pts);
 
 export const ZONES = {
-  mouth: { pts: [[100, 120]], r: 22 },
-  face: { pts: [[100, 98]], r: 52 },
-  hands: { pts: [[52, 190], [148, 190]], r: 24 },
-  body: { pts: [[100, 192]], r: 40 },
-  head: { pts: [[100, 60]], r: 40 },
+  mouth: { pts: [[100, 128]], r: 18 },
+  face: { pts: [[100, 110]], r: 54 },
+  hands: { pts: [[62, 194], [138, 194]], r: 22 },
+  body: { pts: [[100, 200]], r: 32 },
+  head: { pts: [[100, 64]], r: 40 },
 };
 
 const SLOTS = {
-  head: [{ x: 100, y: 34, s: 46 }],
-  eyes: [{ x: 100, y: 93, s: 46 }],
-  neck: [{ x: 100, y: 152, s: 32 }],
-  body: [{ x: 100, y: 186, s: 44 }],
-  legs: [{ x: 100, y: 216, s: 30 }],
-  socks: [{ x: 76, y: 222, s: 16 }, { x: 124, y: 222, s: 16, flip: true }],
-  feet: [{ x: 76, y: 230, s: 18 }, { x: 124, y: 230, s: 18, flip: true }],
-  hand: [{ x: 162, y: 128, s: 46 }],
-  hands: [{ x: 50, y: 192, s: 17 }, { x: 150, y: 192, s: 17, flip: true }],
+  head: [{ x: 100, y: 36, s: 44 }],
+  eyes: [{ x: 100, y: 109, s: 48 }],
+  neck: [{ x: 100, y: 168, s: 28 }],
+  body: [{ x: 100, y: 198, s: 36 }],
+  legs: [{ x: 100, y: 218, s: 24 }],
+  socks: [{ x: 80, y: 224, s: 13 }, { x: 120, y: 224, s: 13, flip: true }],
+  feet: [{ x: 80, y: 231, s: 15 }, { x: 120, y: 231, s: 15, flip: true }],
+  hand: [{ x: 154, y: 150, s: 44 }],
+  hands: [{ x: 62, y: 194, s: 14 }, { x: 138, y: 194, s: 14, flip: true }],
 };
 const CLASH = { body: ['body'], legs: ['legs'] };
 
@@ -380,6 +403,10 @@ export class Buddy {
       }
     return bd < 58 ? best : null;
   }
+  distTo(part, x, y) {
+    const [vx, vy] = this.toVB(x, y);
+    return Math.min(...partPts(this.id, part).map(([px, py]) => Math.hypot(px - vx, py - vy)));
+  }
   partPoint(part) {
     const [x, y] = partPts(this.id, part)[0];
     return this.toClient(x, y);
@@ -428,7 +455,7 @@ export async function sayAll(buddies, text) {
     b.el.classList.add('talking');
   });
   try {
-    await speak(fill(text, 'say'), { pitch: 1.35 });
+    await speak(fill(text, 'say'), { pitch: 1.55 });
   } finally {
     buddies.forEach((b) => {
       b.el.classList.remove('talking');

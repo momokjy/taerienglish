@@ -110,8 +110,11 @@ export const W = {
 ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'].forEach((t, i) => {
   W['n' + (i + 1)] = { t, num: i + 1, one: t, a: 'bounce' };
 });
-// animal sounds are said right after the name in "learn"
-for (const v of Object.values(W)) if (v.sound && !v.s) v.s = v.sound;
+// every word knows its own id; animal sounds are said right after the name in "learn"
+for (const [id, v] of Object.entries(W)) {
+  v.id = id;
+  if (v.sound && !v.s) v.s = v.sound;
+}
 
 /** Fill word placeholders ({t} {T} {one} {pl} {sound} {say}) for one vocab item. */
 export function wordText(template, v, extra = {}) {

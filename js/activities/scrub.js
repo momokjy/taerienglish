@@ -10,15 +10,21 @@ import { ZONES } from '../characters.js';
 function spawnDirt(buddy, zone, kind, n = kind === 'germ' ? 5 : 7) {
   const z = ZONES[zone];
   const out = [];
-  const start = Math.random() * Math.PI * 2;
   for (let i = 0; i < n; i++) {
     const [cx, cy] = z.pts[i % z.pts.length];
-    // spread evenly around the zone so spots don't clump together
-    const a = start + (i * Math.PI * 2) / n + Math.random() * 0.4;
-    const d = z.r * (kind === 'germ' ? 1.15 : 0.35 + Math.random() * 0.55);
+    let a;
+    let d;
+    if (kind === 'germ') {
+      // around the sides and below the mouth, never over the eyes
+      a = ((-25 + (230 * i) / (n - 1)) * Math.PI) / 180;
+      d = z.r * 0.95;
+    } else {
+      a = (i / n) * Math.PI * 2 + Math.random() * 0.5;
+      d = z.r * (0.35 + Math.random() * 0.55);
+    }
     const x = cx + Math.cos(a) * d;
     const y = cy + Math.sin(a) * d;
-    const el = h('div', { class: 'dirt dirt-' + kind, style: { left: x / 2 + '%', top: y / 2.4 + '%', '--s': rand(0.7, 1.25).toFixed(2) } }, kind === 'germ' ? h('span', { class: 'emo' }, '🦠') : null);
+    const el = h('div', { class: 'dirt dirt-' + kind, style: { left: x / 2 + '%', top: y / 2.4 + '%', '--s': rand(0.75, 1.1).toFixed(2) } }, kind === 'germ' ? h('span', { class: 'emo' }, '🦠') : null);
     buddy.layer.append(el);
     out.push(el);
   }

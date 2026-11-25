@@ -1,7 +1,7 @@
 // Offline support. Network first (so updates arrive right away),
 // falling back to the cache when there is no internet.
 
-const CACHE = 'taeri-english-v1';
+const CACHE = 'taeri-english-v2';
 const CORE = [
   './',
   'index.html',

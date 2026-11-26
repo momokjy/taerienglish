@@ -1,6 +1,6 @@
 // Progress + settings, persisted in localStorage (this device only).
 
-const KEY = 'taeri-english-v1';
+const KEY = 'taeri-english-v1'; // separate from other apps on the same site
 
 const defaults = () => ({
   settings: {
